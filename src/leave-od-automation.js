@@ -4,6 +4,7 @@ const SIGN_ID     = "Digital signature file ID from Drive (optional)";
 const SCRIPT_URL  = "Get your script URL from Deploy > New deployment > Web app > Current code > Execute as: Me";
 
 const HOD_EMAIL = "dummy@example.com";
+const INCLUDE_PHONE_IN_APPROVAL_EMAIL = false;
 
 // ✅ TEACHER DIRECTORY
 // Names must match EXACTLY with Google Form dropdown (spacing, capitalisation)
@@ -22,6 +23,21 @@ function getTeacherEmail(name) {
     return HOD_EMAIL;
   }
   return email;
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function maskPhone(phone) {
+  var raw = String(phone || "").replace(/\D/g, "");
+  if (raw.length <= 4) return "****";
+  return "****" + raw.slice(-4);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -68,14 +84,16 @@ function onFormSubmit(e) {
   var btnR = "display:inline-block;background:#d9534f;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-size:16px;font-weight:bold;";
 
   var details =
-    "<b>Name:</b> "         + student    + "<br>" +
-    "<b>Register No:</b> "  + roll       + "<br>" +
-    "<b>Department:</b> "   + department + "<br>" +
-    "<b>Section:</b> "      + section    + "<br>" +
-    "<b>Semester:</b> "     + semester   + "<br>" +
-    "<b>Reason:</b> "       + reason     + "<br>" +
+    "<b>Name:</b> "         + escapeHtml(student)    + "<br>" +
+    "<b>Register No:</b> "  + escapeHtml(roll)       + "<br>" +
+    "<b>Department:</b> "   + escapeHtml(department) + "<br>" +
+    "<b>Section:</b> "      + escapeHtml(section)    + "<br>" +
+    "<b>Semester:</b> "     + escapeHtml(semester)   + "<br>" +
+    "<b>Reason:</b> "       + escapeHtml(reason)     + "<br>" +
     "<b>Leave Period:</b> " + f + " - " + t + " & " + leaveDays + " Days<br>" +
-    "<b>Parent Phone:</b> " + phone      + "<br><br>";
+    (INCLUDE_PHONE_IN_APPROVAL_EMAIL
+      ? "<b>Parent Phone:</b> " + escapeHtml(phone) + "<br><br>"
+      : "<b>Parent Phone:</b> " + maskPhone(phone) + " (masked)<br><br>");
 
   MailApp.sendEmail({
     to: advisorEmail,
@@ -129,7 +147,7 @@ function doGet(e) {
           MailApp.sendEmail({
             to:      studentEmail,
             subject: "Leave Request Rejected",
-            body:    "Dear " + studentName + ",\n\nYour leave request has been rejected by your Class Adviser (" + advisorName + "). Please contact them for details.\n\nRegards,\nDepartment of Artificial Intelligence"
+            body:    "Dear " + studentName + ",\n\nYour leave request has been rejected by your Class Adviser (" + advisorName + "). Please contact them for details.\n\nRegards,\nCampusFlow Leave Automation"
           });
           return HtmlService.createHtmlOutput("Rejection recorded. Student has been notified.");
         }
@@ -145,7 +163,7 @@ function doGet(e) {
           MailApp.sendEmail({
             to:      studentEmail,
             subject: "Leave Request Rejected",
-            body:    "Dear " + studentName + ",\n\nYour leave request has been rejected by your Mentor (" + mentorName + "). Please contact them for details.\n\nRegards,\nDepartment of Artificial Intelligence"
+            body:    "Dear " + studentName + ",\n\nYour leave request has been rejected by your Mentor (" + mentorName + "). Please contact them for details.\n\nRegards,\nCampusFlow Leave Automation"
           });
           return HtmlService.createHtmlOutput("Rejection recorded. Student has been notified.");
         }
@@ -182,16 +200,18 @@ function doGet(e) {
 
         var hodBody =
           "<h2>HOD Approval Required</h2>" +
-          "<b>Name:</b> "           + student     + "<br>" +
-          "<b>Register Number:</b> "+ roll        + "<br>" +
-          "<b>Department:</b> "     + department  + "<br>" +
-          "<b>Section:</b> "        + section     + "<br>" +
-          "<b>Semester:</b> "       + semester    + "<br>" +
-          "<b>Reason:</b> "         + reason      + "<br>" +
+          "<b>Name:</b> "           + escapeHtml(student)     + "<br>" +
+          "<b>Register Number:</b> "+ escapeHtml(roll)        + "<br>" +
+          "<b>Department:</b> "     + escapeHtml(department)  + "<br>" +
+          "<b>Section:</b> "        + escapeHtml(section)     + "<br>" +
+          "<b>Semester:</b> "       + escapeHtml(semester)    + "<br>" +
+          "<b>Reason:</b> "         + escapeHtml(reason)      + "<br>" +
           "<b>Leave Period:</b> "   + f + " - " + t + " & " + leaveDays + " Days<br>" +
-          "<b>Parent Mobile:</b> "  + phone       + "<br>" +
-          "<b>Advisor:</b> "        + advisorName + " ✅ Approved<br>" +
-          "<b>Mentor:</b> "         + mentorName  + " ✅ Approved<br><br>" +
+          (INCLUDE_PHONE_IN_APPROVAL_EMAIL
+            ? "<b>Parent Mobile:</b> " + escapeHtml(phone) + "<br>"
+            : "<b>Parent Mobile:</b> " + maskPhone(phone) + " (masked)<br>") +
+          "<b>Advisor:</b> "        + escapeHtml(advisorName) + " Approved<br>" +
+          "<b>Mentor:</b> "         + escapeHtml(mentorName)  + " Approved<br><br>" +
           "<div style='margin-top:20px;'>" +
             "<a href='" + hodApprove + "' style='display:inline-block;background:#28a745;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;margin-right:20px;font-size:16px;font-weight:bold;'>Approve</a>" +
             "<a href='" + hodReject  + "' style='display:inline-block;background:#d9534f;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;font-size:16px;font-weight:bold;'>Reject</a>" +
@@ -222,7 +242,7 @@ function doGet(e) {
           MailApp.sendEmail({
             to:      studentEmail,
             subject: "Leave Request Rejected by HOD",
-            body:    "Dear " + studentName + ",\n\nYour leave request has been rejected by the HOD. Please contact the department office.\n\nRegards,\nDepartment of Artificial Intelligence"
+            body:    "Dear " + studentName + ",\n\nYour leave request has been rejected by the HOD. Please contact the department office.\n\nRegards,\nCampusFlow Leave Automation"
           });
           return HtmlService.createHtmlOutput("Rejected. Student has been notified.");
         }
@@ -386,7 +406,7 @@ function generatePDF(row) {
     "Attached:\n" +
     "1. Your approved leave letter (" + roll + ".pdf)\n" +
     (proofPdfBlob ? "2. Your submitted proof document\n" : "") +
-    "\nRegards,\nDepartment of Artificial Intelligence\nM. Kumarasamy College of Engineering";
+    "\nRegards,\nCampusFlow Leave Automation";
 
   MailApp.sendEmail({
     to:          studentEmail,

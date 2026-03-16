@@ -1,0 +1,23 @@
+# Local secrets and env
+.env
+.env.*
+*.local
+
+# Optional local config overrides
+config/local-config.js
+config/*.secrets.js
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Runtime exports or manual dumps
+exports/
+backups/
