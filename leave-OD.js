@@ -1,7 +1,7 @@
-const TEMPLATE_ID = "1bRRjcnXqNl-aY_gMN0SdDgyYxkRJJ1ZLx8nkm8H2RB8";
-const FOLDER_ID   = "1KniJW0hYgc7dLrO3sEBMAKzWUkmflhWy";
-const SIGN_ID     = "1uPKALF3LQNFdCUicNSUb409MR63Sf9-2";
-const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbykSjOf3Nsl-UZNc1_7vcEjiYMEXBLmb9EIBYxlg5Wu78vI0kSk10MLgUOI8vNRH6HO1A/exec";
+const TEMPLATE_ID = "Google Docs template file ID from Drive";
+const FOLDER_ID   = "saving time by directly saving PDFs to Drive instead of sending via email attachment";
+const SIGN_ID     = "Digital signature file ID from Drive (optional)";
+const SCRIPT_URL  = "Get your script URL from Deploy > New deployment > Web app > Current code > Execute as: Me";
 
 const HOD_EMAIL = "dummy@example.com";
 
